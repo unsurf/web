@@ -171,7 +171,7 @@ export default function AsciiWave() {
   return (
     <div
       ref={containerRef}
-      className="relative flex h-screen w-full items-center justify-center bg-black overflow-hidden cursor-crosshair"
+      className="relative flex h-dvh w-full items-center justify-center bg-black overflow-hidden cursor-crosshair"
     >
       <canvas ref={canvasRef} className="absolute inset-0" />
       <h1 className="relative z-10 select-none text-[clamp(3rem,12vw,10rem)] font-bold tracking-tighter text-white/90 font-sans pointer-events-none">
