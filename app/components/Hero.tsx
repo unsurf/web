@@ -171,12 +171,23 @@ export default function Hero() {
   return (
     <div
       ref={containerRef}
-      className="relative flex h-screen w-full items-center justify-center bg-black overflow-hidden cursor-crosshair"
+      className="z-0 relative flex h-screen w-full items-center justify-center bg-black overflow-hidden cursor-crosshair"
     >
       <canvas ref={canvasRef} className="absolute inset-0" />
-      <h1 className="relative z-10 select-none text-[clamp(3rem,12vw,10rem)] font-bold tracking-tighter text-white/90 font-sans pointer-events-none">
-        unsurf
-      </h1>
+      <div className="justify-center z-100">
+        <h1 className="relative z-10 select-none text-7xl font-bold text-white/90 font-sans pointer-events-none ">
+          unsurf
+        </h1>
+        <div className="border border-white/60 px-2">
+          <a
+            href="https://www.npmjs.com/package/dotship"
+            target="_blank"
+            className="text-white z-100"
+          >
+            dotship
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
