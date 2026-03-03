@@ -178,11 +178,11 @@ export default function Hero() {
         <h1 className="relative z-10 select-none text-7xl font-bold text-white/90 font-sans pointer-events-none ">
           unsurf
         </h1>
-        <div className="border border-white/60 px-2">
+        <div className="border-t border-white/60 px-2 flex justify-center">
           <a
             href="https://www.npmjs.com/package/dotship"
             target="_blank"
-            className="text-white z-100"
+            className="text-white z-100 text-center"
           >
             dotship
           </a>
