@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 const ASCII_RAMP = " .:-=+*#%@";
@@ -171,22 +172,24 @@ export default function Hero() {
   return (
     <div
       ref={containerRef}
-      className="z-0 relative flex h-screen w-full items-center justify-center bg-black overflow-hidden cursor-crosshair"
+      className="z-0 relative flex flex-col h-screen w-full items-center justify-center bg-black overflow-hidden cursor-crosshair"
     >
       <canvas ref={canvasRef} className="absolute inset-0" />
-      <div className="justify-center z-100">
-        <h1 className="relative z-10 select-none text-7xl font-bold text-white/90 font-sans pointer-events-none ">
-          unsurf
-        </h1>
-        <div className="border-t border-white/60 px-2 flex justify-center">
-          <a
-            href="https://www.npmjs.com/package/dotship"
-            target="_blank"
-            className="text-white z-100 text-center"
-          >
-            dotship
-          </a>
-        </div>
+      <pre className="relative z-10 select-none text-white/90  pointer-events-none leading-none sm:text-[7px] md:text-[8px] text-[4px]">{`
+ ██    ██ ███    ██ ███████ ██    ██ ██████  ███████     ███████ ██   ██
+ ██    ██ ████   ██ ██      ██    ██ ██   ██ ██          ██      ██   ██
+ ██    ██ ██ ██  ██ ███████ ██    ██ ██████  █████       ███████ ███████
+ ██    ██ ██  ██ ██      ██ ██    ██ ██   ██ ██     ██        ██ ██   ██
+  ██████  ██   ████ ███████  ██████  ██   ██ ██     ██  ███████  ██   ██
+`}</pre>
+      <div className="mt-7 z-100 font-mono">
+        <Link
+          href={"https://npmjs.com/package/dotship"}
+          target="_blank"
+          className="text-white"
+        >
+          dotship
+        </Link>
       </div>
     </div>
   );
