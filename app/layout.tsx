@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import OverscrollKill from "./components/OverscrollKill";
+import { ColumnGridOverlay } from "./components/ColumnGridOverlay";
 import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
@@ -28,10 +28,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
       >
-        <OverscrollKill />
         {children}
+        <ColumnGridOverlay />
         <Analytics />
       </body>
     </html>
