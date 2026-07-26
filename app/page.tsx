@@ -87,6 +87,20 @@ export default function Home() {
               className="opacity-0 group-hover:opacity-100 transition-opacity"
             />
           </a>
+          <a
+            href="https://github.com/unsurf/cs-movement"
+            target="_blank"
+            className="group flex items-baseline gap-4 py-5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+          >
+            <span className="text-green-600 dark:text-green-400 text-lg">cs-movement/</span>
+            <span className="text-black/50 dark:text-white/50 text-sm flex-1">
+              Source-engine movement physics library
+            </span>
+            <ArrowDownRight
+              size={14}
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            />
+          </a>
         </div>
       </main>
     </div>
