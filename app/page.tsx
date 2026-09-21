@@ -88,8 +88,7 @@ export default function Home() {
             />
           </a>
           <a
-            href="https://github.com/unsurf/cs-movement"
-            target="_blank"
+            href="/cs-movement"
             className="group flex items-baseline gap-4 py-5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
           >
             <span className="text-green-600 dark:text-green-400 text-lg">cs-movement/</span>

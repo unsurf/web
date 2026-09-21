@@ -1,0 +1,358 @@
+# @unsurf/cs-movement — Agent Guide
+
+> Plain-text reference for AI agents. No web fetching required — everything
+> you need is in this file. If you're building something that uses this
+> library, read this first.
+
+## What It Is
+
+`@unsurf/cs-movement` is a standalone TypeScript library that simulates
+Counter-Strike / Source-engine movement physics. It has zero runtime
+dependencies, is renderer-agnostic, and runs in Node, Deno, Bun, Workers,
+or the browser.
+
+It handles: bunnyhopping, surf, air-strafing, ladders, ducking, stamina,
+ground friction, plane-based brush collision, and perfect-bhop timing.
+
+## Install
+
+```
+npm i @unsurf/cs-movement
+```
+
+## Core Mental Model
+
+The library has three main pieces:
+
+1. **World** — holds collision geometry (brushes + ladders)
+2. **PlayerController** — runs one tick of the simulation, mutates its own state
+3. **Settings** — every tunable (speeds, bhop mode, air accelerate, etc.)
+
+You create a World, fill it with brushes, create a PlayerController with
+that world, then call `player.tick(dt)` in a loop. After each tick you
+read `player.origin`, `player.velocity`, `player.onGround`, etc.
+
+## Minimal Usage (Node / headless)
+
+```ts
+import {
+  World, PlayerController, brushFromAABB, vec3, DEFAULT_SETTINGS
+} from '@unsurf/cs-movement';
+
+const world = new World();
+world.solids.push(brushFromAABB(vec3(-8192, -64, -8192), vec3(8192, 0, 8192)));
+
+const player = new PlayerController(world, structuredClone(DEFAULT_SETTINGS), vec3(0, 5, 0));
+
+// Drive inputs directly:
+player.input.forward = true;
+player.input.jump = true;
+
+// Run 128 ticks (1 second at 128-tick):
+for (let i = 0; i < 128; i++) player.tick(1 / 128);
+
+console.log(player.horizontalSpeed); // ~250
+console.log(player.origin);         // Vec3
+console.log(player.velocity);       // Vec3
+console.log(player.onGround);       // boolean
+```
+
+## Minimal Usage (Browser)
+
+```ts
+import {
+  World, PlayerController, brushFromAABB, vec3, DEFAULT_SETTINGS
+} from '@unsurf/cs-movement';
+
+const world = new World();
+world.solids.push(brushFromAABB(vec3(-512, -16, -512), vec3(512, 0, 512)));
+
+const player = new PlayerController(world, structuredClone(DEFAULT_SETTINGS), vec3(0, 8, 0));
+player.bindInput(canvas); // wires WASD + pointer lock
+
+function gameLoop(dt: number) {
+  player.tick(dt);
+  // render using player.origin, player.velocity, player.yaw, player.pitch
+  requestAnimationFrame((t) => gameLoop(t / 1000));
+}
+requestAnimationFrame((t) => gameLoop(t / 1000));
+```
+
+## Key Types
+
+### Vec3
+
+Three-component vector. All positions and velocities use Source units
+(1 unit ≈ 1 inch, Y is up).
+
+```ts
+vec3(x, y, z)         // constructor
+copy(out, a)           // out = a
+set(out, x, y, z)     // out = {x,y,z}
+add(out, a, b)         // out = a + b
+sub(out, a, b)         // out = a - b
+addScaled(out, a, b, s)// out = a + b*s
+scale(out, a, s)       // out = a * s
+dot(a, b)              // scalar product
+cross(out, a, b)       // cross product
+length(a)              // magnitude
+length2D(a)            // sqrt(x² + z²) — horizontal speed
+lengthSq(a)            // magnitude squared
+normalize(out, a)      // unit vector
+clone(a)               // new Vec3 copy
+```
+
+### Brush
+
+Convex collision shape defined by bounding planes. Has `planes: Plane[]`
+and broadphase bounds `min: Vec3, max: Vec3`.
+
+```ts
+interface Plane { normal: Vec3; dist: number; }
+interface Brush { planes: Plane[]; min: Vec3; max: Vec3; }
+```
+
+### LadderVolume
+
+Extends Brush with a `facing: Vec3` direction.
+
+### TraceResult
+
+```ts
+interface TraceResult {
+  fraction: number;    // 0..1, how far the trace got
+  endPos: Vec3;        // where it stopped
+  normal: Vec3 | null; // hit plane normal (null if fraction === 1)
+  startSolid: boolean; // started inside geometry
+  allSolid: boolean;   // fully stuck
+}
+```
+
+### InputState
+
+Fields you set before each tick:
+
+```ts
+player.input.forward = true;   // W
+player.input.back = true;      // S
+player.input.left = true;      // A
+player.input.right = true;     // D
+player.input.jump = true;      // Space
+player.input.duck = true;      // Ctrl/C
+player.input.walk = true;      // Shift
+player.input.reset = true;     // R
+```
+
+### Settings
+
+Every field and its default:
+
+```ts
+{
+  sensitivity: 1.5,       // mouse multiplier
+  mYaw: 0.022,            // degrees per mouse count
+  fov: 90,                // horizontal FOV (render-only)
+  tickRate: 128,          // advisory, you pass dt to tick()
+  autobhop: true,         // holding jump re-hops every grounded tick
+  bhopSpeedClamp: true,   // clamp takeoff to 1.1× maxspeed
+  noPrestrafe: true,      // hard ceiling on ground speed
+  airAccelerate: 100,     // sv_airaccelerate (CS:GO default: 12)
+  runSpeed: 250,          // max ground speed (units/sec)
+  walkSpeed: 130,         // max walk speed
+  crouchSpeed: 85,        // max crouch speed
+  showSpeed: false,       // HUD flag (you render)
+  showFps: false,         // HUD flag (you render)
+  showDebug: false,       // HUD flag (you render)
+  viewPunch: false,       // landing view-punch offset
+  crosshair: { color: '#00ff00', size: 6, thickness: 2, gap: 4,
+               outline: true, dot: false, tStyle: false },
+  stamina: { enabled: false, max: 1, jumpCost: 0.08, landCost: 0.05,
+             recoveryRate: 0.5, maxPenalty: 0.4 },
+  perf: { enabled: false, maxAirSpeed: 390 },
+}
+```
+
+Copy defaults with `structuredClone(DEFAULT_SETTINGS)`, then mutate.
+
+## PlayerController — Read-Only State After Tick
+
+These fields are updated every tick. Read them to drive rendering or logic:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `origin` | Vec3 | World position |
+| `velocity` | Vec3 | Velocity (units/sec) |
+| `yaw` | number | Horizontal look angle (degrees, 0 = -Z) |
+| `pitch` | number | Vertical look angle (degrees) |
+| `onGround` | boolean | Grounded? |
+| `groundNormal` | Vec3 | Normal of standing surface |
+| `ducked` | boolean | Duck state |
+| `duckFrac` | number | 0→1 eye-height lerp |
+| `surfing` | boolean | Riding a surf slope? |
+| `onLadder` | LadderVolume \| null | Gripped ladder |
+| `horizontalSpeed` | number | `length2D(velocity)` |
+| `eyeHeight` | number | Current eye height (lerped) |
+| `stamina` | number | Fatigue pool (0..max) |
+| `lastHopQuality` | 'perfect' \| 'normal' \| null | Last takeoff quality |
+| `landingVelocity` | Vec3 | Velocity at last landing |
+| `prevPos` / `currPos` | Vec3 | Per-tick position snapshots |
+| `prevEye` / `currEye` | number | Per-tick eye-height snapshots |
+| `landPunch` | number | Downward view-punch (decays) |
+| `mins` | Vec3 | Current hull min (stand or duck) |
+| `maxs` | Vec3 | Current hull max (stand or duck) |
+
+## PlayerController — Methods
+
+| Method | Signature | Description |
+|---|---|---|
+| `tick` | `(dt: number) => void` | One simulation step. dt in seconds. |
+| `respawn` | `() => void` | Reset to spawn. |
+| `bindInput` | `(el: HTMLElement) => void` | Wire keyboard + mouse to element. |
+| `tickHistoryText` | `() => string` | Last 384 ticks as text. |
+
+## Building a World
+
+### Axis-Aligned Box
+
+```ts
+import { brushFromAABB } from '@unsurf/cs-movement';
+
+// Floor at y=0, 1024×1024 units
+world.solids.push(brushFromAABB(vec3(-512, -16, -512), vec3(512, 0, 512)));
+```
+
+### Oriented Box (ramps, surf slopes)
+
+```ts
+import { brushFromOrientedBox } from '@unsurf/cs-movement';
+
+world.solids.push(brushFromOrientedBox(
+  vec3(0, 200, 0),         // center
+  vec3(512, 16, 200),      // half-extents
+  vec3(1, 0, 0),           // local X axis (right)
+  vec3(0, 0.5, 0.866),     // local Y axis — tilted = surfable
+  vec3(0, -0.866, 0.5),    // local Z axis
+));
+```
+
+### Ladder Volume
+
+```ts
+world.ladders.push({
+  ...brushFromAABB(vec3(60, 0, -24), vec3(100, 600, 24)),
+  facing: vec3(-1, 0, 0),  // climbable face direction
+});
+```
+
+### Surface Type Rules
+
+- `normal.y >= STANDABLE_NORMAL` (0.7, ~45.57°) → walkable
+- `normal.y < 0.7` and not vertical → surfable
+- `normal.y ≈ 0` and mostly horizontal → wall (clipped, no surf)
+
+## Bhop Modes
+
+| autobhop | bhopSpeedClamp | Behavior |
+|---|---|---|
+| true | true (default) | KZ/HNS — auto-rehop, takeoff capped at 1.1× |
+| true | false | Auto-rehop, speed compounds without bound |
+| false | either | Vanilla — fresh press only (pogo-stick rule) |
+
+## Perf (Perfect Bhop)
+
+A manual rejump on the exact tick after landing restores landing velocity,
+bypassing the bhop clamp. Requirements:
+- Exact tick (not late, no partial credit)
+- Not autobhop (held-jump re-fires instantly)
+- Not a surf landing
+- Not the first jump of a life
+
+## Common Recipes
+
+### Fixed Timestep
+
+```ts
+const TICK_DT = 1 / 128;
+let accumulator = 0;
+
+function loop(frameDt: number) {
+  accumulator += frameDt;
+  while (accumulator >= TICK_DT) {
+    player.tick(TICK_DT);
+    accumulator -= TICK_DT;
+  }
+  // Render with interpolation:
+  const t = accumulator / TICK_DT;
+  const renderPos = lerp(player.prevPos, player.currPos, t);
+  const renderEye = lerp(player.prevEye, player.currEye, t);
+}
+```
+
+### Three.js Camera
+
+```ts
+camera.position.set(player.origin.x, player.origin.y + player.eyeHeight, player.origin.z);
+camera.rotation.order = 'YXZ';
+camera.rotation.y = THREE.MathUtils.degToRad(-player.yaw);
+camera.rotation.x = THREE.MathUtils.degToRad(player.pitch);
+```
+
+### Server Replay Validation
+
+```ts
+const player = new PlayerController(world, structuredClone(DEFAULT_SETTINGS), spawn, {
+  log: (msg) => console.warn('[movement]', msg),
+});
+
+for (const input of recordedInputs) {
+  Object.assign(player.input, input);
+  player.tick(1 / 128);
+}
+
+console.log(player.tickHistoryText()); // dump for audit
+```
+
+## Important Constants
+
+| Name | Value | Meaning |
+|---|---|---|
+| `GRAVITY` | 800 | Units/sec² downward |
+| `RUN_SPEED` | 250 | Max ground speed |
+| `WALK_SPEED` | 130 | Max walk speed |
+| `CROUCH_SPEED` | 85 | Max crouch speed |
+| `STANDABLE_NORMAL` | 0.7 | Ground threshold (~45.57°) |
+| `M_YAW` | 0.022 | Degrees per mouse count |
+| `PITCH_CLAMP` | 89 | Max vertical look angle |
+| `AIR_ACCELERATE` | 100 | Default air accelerate |
+| `AIR_SPEED_CAP` | 30 | Soft air speed ceiling |
+| `DIST_EPSILON` | 0.03125 | Trace epsilon (1/32 unit) |
+| `DEFAULT_TICK_RATE` | 128 | Tick rate advisory |
+| `MAX_FRAME_TIME` | 0.1 | rAF delta clamp |
+
+## Physics Functions (pure, exported)
+
+| Function | Purpose |
+|---|---|
+| `applyFriction(ctx, dt)` | Ground friction (sv_friction) |
+| `accelerate(ctx, wishdir, wishspeed, dt)` | Ground acceleration |
+| `airAccelerate(ctx, wishdir, wishspeed, dt)` | Air acceleration |
+| `clipVelocity(in, normal, out, overbounce)` | Clip against contact plane |
+| `addStamina(current, cost, max)` | Add fatigue |
+| `recoverStamina(current, rate, max, dt)` | Drain fatigue over time |
+| `staminaPenaltyMultiplier(stamina, max, maxPenalty)` | Speed multiplier from fatigue |
+| `applyAirSpeedCeiling(speed, maxAirSpeed)` | Diminishing-returns air cap |
+
+## Live Demo
+
+https://hns.unsurf.sh
+
+## Notes
+
+- The simulation is **zero-allocation** per tick — no GC pressure.
+- `tick(dt)` mutates the player in place. No return value.
+- You choose the tick rate by passing the right dt (1/128 for 128-tick).
+- The library does NOT render. You read state and render yourself.
+- Only `bindInput()` and `loadSettings()`/`saveSettings()` need a browser.
+  Everything else runs in Node/Deno/Bun/Workers.
+- Source: https://github.com/unsurf/cs-movement
+- npm: https://www.npmjs.com/package/@unsurf/cs-movement
