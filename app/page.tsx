@@ -100,6 +100,19 @@ export default function Home() {
               className="opacity-0 group-hover:opacity-100 transition-opacity"
             />
           </a>
+          <a
+            href="/openinventory"
+            className="group flex items-baseline gap-4 py-5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+          >
+            <span className="text-green-600 dark:text-green-400 text-lg">openinventory/</span>
+            <span className="text-black/50 dark:text-white/50 text-sm flex-1">
+              self-hosted CS2 inventory tracker
+            </span>
+            <ArrowDownRight
+              size={14}
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            />
+          </a>
         </div>
       </main>
     </div>
