@@ -2,11 +2,14 @@ import { ArrowLeft, ArrowDownRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "unsurf · cs-movement",
+import { pageMetadata } from "../lib/seo/seo.utils";
+
+export const metadata: Metadata = pageMetadata({
+  path: "/cs-movement",
+  title: "cs-movement",
   description:
     "Counter-Strike / Source-engine movement physics as a TypeScript library. Bhop, surf, air-strafing, ladders, ducking, stamina, and plane-based brush collision.",
-};
+});
 
 function SectionTitle({
   children,
@@ -16,12 +19,12 @@ function SectionTitle({
   right?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-3 mb-6 font-mono text-xs uppercase tracking-widest text-white/50">
+    <div className="flex items-center gap-3 mb-6 font-mono text-xs uppercase tracking-widest text-white/60">
       <span className="text-green-400">▌</span>
       <span>{children}</span>
       <span className="flex-1 h-px bg-white/10" />
       {right && (
-        <span className="text-white/30 normal-case tracking-normal">
+        <span className="text-white/60 normal-case tracking-normal">
           {right}
         </span>
       )}
@@ -33,11 +36,11 @@ function Code({ children, title }: { children: React.ReactNode; title?: string }
   return (
     <div className="mt-3">
       {title && (
-        <span className="text-[11px] text-white/30 uppercase tracking-wider">
+        <span className="text-[11px] text-white/60 uppercase tracking-wider">
           {title}
         </span>
       )}
-      <pre className="p-4 bg-white/[0.03] border border-white/5 rounded-lg overflow-x-auto text-[13px] leading-relaxed text-white/70">
+      <pre tabIndex={0} className="p-4 bg-white/[0.03] border border-white/5 rounded-lg overflow-x-auto text-[13px] leading-relaxed text-white/70">
         <code>{children}</code>
       </pre>
     </div>
@@ -54,9 +57,9 @@ function H2({ children }: { children: React.ReactNode }) {
 
 function H3({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="mt-10 mb-3 text-sm font-semibold text-white/80">
+    <h2 className="mt-10 mb-3 text-sm font-semibold text-white/80">
       {children}
-    </h3>
+    </h2>
   );
 }
 
@@ -69,7 +72,7 @@ function P({
 }) {
   return (
     <p
-      className={`text-[13px] leading-relaxed text-white/50 ${className ?? ""}`}
+      className={`text-[13px] leading-relaxed text-white/60 ${className ?? ""}`}
     >
       {children}
     </p>
@@ -101,14 +104,14 @@ function Table({
   rows: (string | React.ReactNode)[][];
 }) {
   return (
-    <div className="mt-3 overflow-x-auto">
+    <div tabIndex={0} className="mt-3 overflow-x-auto">
       <table className="w-full text-[13px]">
         <thead>
           <tr className="border-b border-white/10">
             {headers.map((h) => (
               <th
                 key={h}
-                className="text-left py-2 pr-4 text-white/40 font-normal"
+                className="text-left py-2 pr-4 text-white/60 font-normal"
               >
                 {h}
               </th>
@@ -133,12 +136,12 @@ function Table({
 
 export default function CSMovementPage() {
   return (
-    <div className="min-h-screen bg-black text-white font-mono">
+    <div className="min-h-screen text-white font-mono">
       <div className="mx-auto max-w-3xl px-6 py-12 sm:py-16">
         {/* back link */}
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-sm text-white/50 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition-colors"
         >
           <ArrowLeft size={14} />
           ~/unsurf
@@ -146,13 +149,13 @@ export default function CSMovementPage() {
 
         {/* ─── Hero ─── */}
         <header className="mt-10">
-          <p className="text-sm text-white/40">
+          <p className="text-sm text-white/60">
             <span className="text-green-400">visitor</span>
-            <span className="text-white/30">@</span>
+            <span className="text-white/60">@</span>
             <span className="text-blue-300">unsurf</span>
-            <span className="text-white/30">:</span>
+            <span className="text-white/60">:</span>
             <span className="text-violet-300">~</span>
-            <span className="text-white/30">$</span> npm info{" "}
+            <span className="text-white/60">$</span> npm info{" "}
             <span className="text-white/70">@unsurf/cs-movement</span>
           </p>
 
@@ -600,7 +603,7 @@ settings.airAccelerate = 100;   // KZ server (CS:GO default is 12)`}</Code>
           <P className="mt-3">
             Nothing else qualifies, ever:
           </P>
-          <ul className="mt-2 space-y-1.5 text-[13px] text-white/50 list-disc list-inside">
+          <ul className="mt-2 space-y-1.5 text-[13px] text-white/60 list-disc list-inside">
             <li>
               A rejump even one tick late gets nothing — no partial credit.
             </li>
@@ -1168,8 +1171,8 @@ for (let i = 0; i < 10; i++) {
               rel="noreferrer"
               className="group flex items-baseline gap-4 py-4 hover:bg-white/[0.02] transition-colors"
             >
-              <span className="text-white/50 text-sm flex-1">GitHub</span>
-              <span className="text-white/30 text-sm">
+              <span className="text-white/60 text-sm flex-1">GitHub</span>
+              <span className="text-white/60 text-sm">
                 github.com/unsurf/cs-movement
               </span>
               <ArrowDownRight
@@ -1183,8 +1186,8 @@ for (let i = 0; i < 10; i++) {
               rel="noreferrer"
               className="group flex items-baseline gap-4 py-4 hover:bg-white/[0.02] transition-colors"
             >
-              <span className="text-white/50 text-sm flex-1">npm</span>
-              <span className="text-white/30 text-sm">
+              <span className="text-white/60 text-sm flex-1">npm</span>
+              <span className="text-white/60 text-sm">
                 @unsurf/cs-movement
               </span>
               <ArrowDownRight
@@ -1198,8 +1201,8 @@ for (let i = 0; i < 10; i++) {
               rel="noreferrer"
               className="group flex items-baseline gap-4 py-4 hover:bg-white/[0.02] transition-colors"
             >
-              <span className="text-white/50 text-sm flex-1">Demo</span>
-              <span className="text-white/30 text-sm">hns.unsurf.sh</span>
+              <span className="text-white/60 text-sm flex-1">Demo</span>
+              <span className="text-white/60 text-sm">hns.unsurf.sh</span>
               <ArrowDownRight
                 size={14}
                 className="opacity-0 group-hover:opacity-100 transition-opacity"
@@ -1211,8 +1214,8 @@ for (let i = 0; i < 10; i++) {
               rel="noreferrer"
               className="group flex items-baseline gap-4 py-4 hover:bg-white/[0.02] transition-colors"
             >
-              <span className="text-white/50 text-sm flex-1">For Agents</span>
-              <span className="text-white/30 text-sm">
+              <span className="text-white/60 text-sm flex-1">For Agents</span>
+              <span className="text-white/60 text-sm">
                 plain-text reference for AI
               </span>
               <ArrowDownRight
@@ -1224,7 +1227,7 @@ for (let i = 0; i < 10; i++) {
         </section>
 
         {/* ─── Footer ─── */}
-        <footer className="mt-16 pt-6 border-t border-white/10 flex items-center justify-between text-xs text-white/30">
+        <footer className="mt-16 pt-6 border-t border-white/10 flex items-center justify-between text-xs text-white/60">
           <span>Apache-2.0 · Copyright 2026 unsurf</span>
           <a
             href="https://github.com/unsurf/cs-movement/blob/main/LICENSE"
