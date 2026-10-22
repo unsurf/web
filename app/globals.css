@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
+  --background: #02060a;
+  --foreground: #e9f3ef;
+  --accent: rgb(159 245 212);
+  --hero-out: 0;
 }
 
 @theme inline {
@@ -10,17 +12,107 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-martian), var(--font-geist-mono);
 }
 
 html {
-  overflow-x: hidden;
+  color-scheme: dark;
+  scrollbar-width: none;
+  scroll-behavior: auto;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
 }
 
 body {
-  min-height: 100%;
+  min-height: 100svh;
+  overflow-x: clip;
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--accent);
+  color: #000;
+}
+
+/* block characters need a face whose full-block glyph fills its cell; Geist Mono's has side bearings */
+.wordmark {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  font-size: clamp(0.45rem, calc((100vw - 3rem) / 41.6), 3.6rem);
+  font-variant-ligatures: none;
+}
+
+main:focus {
+  outline: none;
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 100;
+  translate: 0 -200%;
+  background: var(--accent);
+  color: #000;
+  padding: 0.6rem 1rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.8rem;
+}
+.skip-link:focus {
+  translate: 0 0;
+}
+
+/* inner pages keep their own markup; give them the sea behind them */
+a:focus-visible,
+button:focus-visible {
+  outline: 1px solid #fff;
+  outline-offset: 3px;
+}
+
+html.js [data-reveal]:not([data-in]) {
+  opacity: 0;
+  translate: 0 28px;
+}
+[data-reveal] {
+  transition:
+    opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+    translate 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cue {
+  0%,
+  100% {
+    transform: scaleX(0.3);
+  }
+  50% {
+    transform: scaleX(1);
+  }
 }
 
 @keyframes column-overlay-fade-in {
@@ -42,7 +134,17 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .column-grid-overlay {
+  html.js [data-reveal]:not([data-in]) {
+    opacity: 1;
+    translate: none;
+  }
+  *,
+  *::before,
+  *::after {
     animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
   }
 }
